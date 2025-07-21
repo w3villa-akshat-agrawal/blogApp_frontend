@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchBlog } from '../api/blogApi';
 import Navbar from '../components/Navbar';
 import { postComment } from '../api/commentApi';
@@ -8,7 +8,7 @@ import { userFollow } from '../api/socialApi';
 const BlogPage = () => {
   const { state } = useLocation();
   const { id } = state;
-
+  const navigate = useNavigate()  
   const [blog, setBlog] = useState([]);
   const [error, setError] = useState('');
   const [showComments, setShowComments] = useState(false);
@@ -44,6 +44,11 @@ const BlogPage = () => {
             console.log(error)
         }
   }
+  const handelGoToProfile = (id)=>{
+        navigate("/Profile", {
+      state: {id},
+    });
+  }
   const handlePublishComment = async(id) => {
     try {
         if (!newComment.trim()) return;
@@ -69,7 +74,9 @@ const BlogPage = () => {
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-2">
           <p className="text-green-700 text-sm">
-            By <span className="font-semibold text-green-900">{blogData.author?.username}</span>
+            By <span onClick={()=>{
+                handelGoToProfile(blogData.author.id)
+            }} className="font-semibold  text-green-900">{blogData.author?.username}</span>
           </p>
 <div className="flex gap-4">
   {userId !== blogData.author.id && (

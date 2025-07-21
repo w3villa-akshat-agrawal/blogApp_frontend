@@ -3,7 +3,7 @@ import ProfileImage from "../assets/Account-cuate.svg";
 import Toast from "../components/Toast";
 import { blogDelete, userProfile } from "../api/blogApi";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../api/authApi";
 
 const Profile = () => {
@@ -14,7 +14,8 @@ const Profile = () => {
   const [toastType, setToastType] = useState("success");
   const [showComments, setShowComments] = useState(false);
   const [commentData,setcommentData] = useState([])
-
+    const location = useLocation();
+  const userId = location.state?.id;
   const [profileData, setProfileData] = useState({
     username: "loading...",
     followers: 0,
@@ -78,7 +79,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await userProfile();
+        const res = await userProfile(userId);
         const { userDetail, followerCount, followingCount } = res.data;
 
         setProfileData({

@@ -11,17 +11,18 @@ export const allBlog = async () => {
     console.error("allBlog API Error:", error.response?.data || error.message);
     throw error; // ✅ throw it instead of returning
   }
-};
+}; 
 
 export const createBlog = async (data)=>{
     const res = await blogInstance.post("/createBlog",data)
     return res
 }
 
-export const userProfile = async ()=>{
-    const res = await blogInstance.get("/userBlog")
-    return (res.data)
-}
+export const userProfile = async (searchId = "") => {
+  const url = searchId ? `/userBlog?searchId=${searchId}` : '/userBlog';
+  const res = await blogInstance.get(url);
+  return res.data;
+};
 
 export const blogDelete = async (id)=>{
     const  res = await blogInstance.delete(`/delete/blog/${id}`)

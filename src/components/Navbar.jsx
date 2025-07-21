@@ -16,7 +16,7 @@ const Navbar = ({onlogout}) => {
           <div className="flex items-center gap-6 text-sm">
            <Link to="/dashboard" className="hover:text-green-200">Home</Link>
             <Link to="/profile" className="hover:text-green-200">Profile</Link>
-            <a href="#" className="hover:text-green-200">Contact</a>
+             <Link to="/plans" className="hover:text-green-200">Plans</Link>
             <button onClick={handelCreateBlog} className="bg-white text-green-600 font-medium px-4 py-1 rounded hover:bg-green-100">
               Get Started
             </button>
