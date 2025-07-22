@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { buyPlan, subsApi } from '../api/planApi'
+import {  subsApi } from '../api/planApi'
 import blogSvg from '../assets/Pricing plans-bro.svg'
 import Toast from '../components/Toast'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const PlanPage = () => {
   const [plans, setPlans] = useState([])
@@ -10,37 +11,87 @@ const PlanPage = () => {
 
   // Toast States
   const [toastVisible, setToastVisible] = useState(false)
+  const [userId, setuserId] = useState("")
   const [toastMessage, setToastMessage] = useState("")
   const [toastType, setToastType] = useState("success") // or "error"
-
+//   const [Price, setPrice] = useState(0)
+    
   const showToast = (message, type = "success") => {
     setToastMessage(message)
     setToastType(type)
     setToastVisible(true)
   }
-
-  const handelbuyNow = async (planId, period) => {
-    try {
-      const result = await buyPlan({ planId, period })
-      console.log("Buy Result:", result)
-
-      // ✅ Show success toast
-      showToast("Plan purchased successfully!", "success")
-      setTimeout(()=>{
-        navigate('/dashboard')
-      },2000)
-    } catch (error) {
-      console.log("Buy Error:", error)
-        const errMsg = error.response?.data?.message || 'Failed to buy plan server error';
-      // ❌ Show error toast
-      showToast(errMsg, "error")
+  
+const handelbuyNow = async (planId, period, name) => {
+  try {
+    let price;
+    if (name.toLowerCase() === "silver") {
+      price = 5;
+    } else if (name.toLowerCase() === "gold") {
+      price = 10;
+    } else {
+      showToast("❌ Invalid plan selected", "error");
+      return;
     }
+
+    // Create Razorpay order
+    const res = await axios.post("http://localhost:3008/api/payment/create-order", {
+      amount: price * 100, // Razorpay accepts amount in paise
+      planId,
+    });
+
+    const { order, key } = res.data;
+
+    const options = {
+      key,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Blog App",
+      description: `Subscribe to ${name} plan`,
+      order_id: order.id,
+      handler: async (response) => {
+        try {
+          // Verify payment on backend
+          await axios.post("http://localhost:3008/api/payment/verify-payment", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            planId,
+            period,
+            userId: userId
+          });
+
+          showToast("✅ Payment Successful", "success");
+          setTimeout(() => navigate('/dashboard'), 2000);
+        } catch (err) {
+            console.log(err)
+          showToast("❌ Payment verification failed", "error");
+        }
+      },
+      prefill: {
+        name: "User",
+        email: "user@example.com",
+      },
+      theme: {
+        color: "#22c55e",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    console.error(error);
+    const errMsg = error.response?.data?.message || 'Payment failed.';
+    showToast(errMsg, "error");
   }
+};
+
 
   useEffect(() => {
     const fetchPlans = async () => {
       const res = await subsApi()
-      setPlans(res.data)
+      setPlans(res.data.res)
+      setuserId(res.data.userId)
     }
     fetchPlans()
   }, [])
@@ -86,7 +137,7 @@ const PlanPage = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => handelbuyNow(plan.id, plan.durationHours)}
+                  onClick={() => handelbuyNow(plan.id, plan.durationHours,plan.name)}
                   className="border-black px-3 py-1 rounded bg-red-600 hover:scale-[1.05] transition-transform"
                 >
                   Buy Now
