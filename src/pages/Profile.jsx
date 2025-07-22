@@ -5,6 +5,7 @@ import { blogDelete, userProfile } from "../api/blogApi";
 import Navbar from "../components/Navbar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../api/authApi";
+import { userFollow } from "../api/socialApi";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -14,8 +15,11 @@ const Profile = () => {
   const [toastType, setToastType] = useState("success");
   const [showComments, setShowComments] = useState(false);
   const [commentData,setcommentData] = useState([])
+  const [loginUserID, setloginUserID] = useState("")
+  const [isFollowing, setisFollowing] = useState(false)
     const location = useLocation();
   const userId = location.state?.id;
+  console.log(userId)
   const [profileData, setProfileData] = useState({
     username: "loading...",
     followers: 0,
@@ -52,6 +56,15 @@ const Profile = () => {
     }
   };
 
+  const handelFollow = async(data)=>{
+          try {
+             const res = await userFollow(data) 
+             console.log(res)
+          } catch (error) {
+              console.log(error)
+          }
+    }
+
   // Logout user
   const handleLogout = async () => {
     try {
@@ -80,8 +93,9 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const res = await userProfile(userId);
-        const { userDetail, followerCount, followingCount } = res.data;
-
+        const { userDetail, followerCount, followingCount,loginUserID,followingStatus } = res.data;
+        setloginUserID(loginUserID)
+        setisFollowing(followingStatus)
         setProfileData({
           username: userDetail.username,
           followers: followerCount,
@@ -122,12 +136,28 @@ const Profile = () => {
         {/* Right: Profile Info + Blogs */}
         <div className="col-span-12 md:col-span-8 space-y-6">
           {/* User Info */}
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800">{profileData.username}</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800">{profileData.username}</h2>
             <p className="text-gray-600 mt-1">
               <span className="font-semibold">{profileData.followers}</span> Followers ·{" "}
               <span className="font-semibold">{profileData.following}</span> Following
             </p>
+            </div>
+          {isFollowing ? (
+  <button className="px-4 py-2 bg-gray-300 text-black rounded">Following</button>
+) : (
+  userId && loginUserID !== userId ? (
+    <button
+      onClick={() => handelFollow({ id: userId })}
+      className="px-4 py-2 bg-blue-500 text-white rounded"
+    >
+      Follow
+    </button>
+  ) : null
+)}
+            
+            
           </div>
 
           {/* Blog List */}

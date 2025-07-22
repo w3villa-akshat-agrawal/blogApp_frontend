@@ -24,7 +24,6 @@ const Dashboard = () => {
         const response = await allBlog();
         console.log(response.data.data)
         setBlog(response.data.data);
-        console.log("userID",response.data.userId)
         setuserId(response.data.userId)
         setToastMessage("Blogs fetched successfully!");
         setToastType("success");
