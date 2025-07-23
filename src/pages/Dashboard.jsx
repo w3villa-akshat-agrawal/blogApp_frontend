@@ -19,28 +19,41 @@ const Dashboard = () => {
     });
   }
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await allBlog();
-        console.log(response.data.data)
-        setBlog(response.data.data);
-        setuserId(response.data.userId)
-        setToastMessage("Blogs fetched successfully!");
-        setToastType("success");
-        setToastVisible(true);
-      } catch (err) {
-        console.error("Error fetching blogs:", err?.response?.data?.message);
-        setToastMessage(err?.response?.data?.message || "Something went wrong");
-        setToastType("error");
-        setToastVisible(true);
-        if (err?.response?.status === 401) {
-          navigate("/login");
-        }
-      }
-    };
+  // 🌟 1. Set userId immediately from localStorage (if present)
+  const storedUserId = localStorage.getItem("userId");
+  if (storedUserId) {
+     setuserId(Number(storedUserId));
+  }
 
-    fetchBlogs();
-  }, []);
+  // 🌟 2. Fetch blogs
+  const fetchBlogs = async () => {
+    try {
+      const response = await allBlog();
+      setBlog(response.data.data);
+
+      // 🌟 3. If userId comes from DB, update state + localStorage
+      if (response.data.userId) {
+        localStorage.setItem("userId", response.data.userId);
+        setuserId(response.data.userId);
+      }
+
+      setToastMessage("Blogs fetched successfully!");
+      setToastType("success");
+      setToastVisible(true);
+    } catch (err) {
+      console.error("Error fetching blogs:", err?.response?.data?.message);
+      setToastMessage(err?.response?.data?.message || "Something went wrong");
+      setToastType("error");
+      setToastVisible(true);
+      if (err?.response?.status === 401) {
+        navigate("/login");
+      }
+    }
+  };
+
+  fetchBlogs();
+}, []);
+
 
   const handleLogout = async () => {
     try {
@@ -95,12 +108,12 @@ const Dashboard = () => {
   <span>
     by <span className="font-semibold">{userId === item.author.id ? "Me" : item.author?.username || "Anonymous"}</span>
   </span>
-
+{/* 
   {userId !== item.author.id && (
     <button className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
       Follow
     </button>
-  )}
+  )} */}
 
   <button className="hover:underline">
     💬 {item.comments?.length || 0} Comments
