@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Update from './pages/Update';
 import BlogPage from './pages/BlogPage';
 import PlanPage from './pages/PlanPage';
+import AdminPage from './pages/AdminPage';
 
 const App = () => {
   return (
@@ -35,7 +36,8 @@ const App = () => {
         <Route path='/profile'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><Profile/></div>}></Route>
         <Route path='/update'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><Update/></div>}></Route>
         <Route path='/Blog'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><BlogPage/></div>}></Route>
-         <Route path='/plans'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><PlanPage/></div>}></Route>
+        <Route path='/plans'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><PlanPage/></div>}></Route>
+        <Route path='/admin'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><AdminPage/></div>}></Route>
     </Routes>
   );
 };

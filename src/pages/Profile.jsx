@@ -89,8 +89,10 @@ const Profile = () => {
   const handelFollow = async (data) => {
     try {
       await userFollow(data);
+      showToast("now following","success")
       setfCount((prev) => prev + 1);
     } catch (error) {
+      showToast(error.messsage,"error")
       console.log(error);
     }
   };
