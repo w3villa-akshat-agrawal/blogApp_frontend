@@ -11,6 +11,7 @@ import Update from './pages/Update';
 import BlogPage from './pages/BlogPage';
 import PlanPage from './pages/PlanPage';
 import AdminPage from './pages/AdminPage';
+import Otp from './features/auth/Otp';
 
 const App = () => {
   return (
@@ -38,6 +39,7 @@ const App = () => {
         <Route path='/Blog'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><BlogPage/></div>}></Route>
         <Route path='/plans'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><PlanPage/></div>}></Route>
         <Route path='/admin'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><AdminPage/></div>}></Route>
+        <Route path='/otpVerification'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><Otp/></div>}></Route>
     </Routes>
   );
 };

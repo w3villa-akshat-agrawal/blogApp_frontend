@@ -52,9 +52,13 @@ const Signup = () => {
         lastName: "",
         password: "",
       });
-      setTimeout(()=>{
-         navigate("/login")
-      },1000)
+      setTimeout(() => {
+        console.log(response)
+        
+  navigate("/otpVerification", {
+    state: { phone: response.data.user.phone }
+  });
+}, 1000);
     } catch (error) {
       const errMsg = error.response?.data?.message || "Something went wrong. Try again.";
       showToast(errMsg, "error");

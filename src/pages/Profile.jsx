@@ -92,7 +92,7 @@ const Profile = () => {
       showToast("now following","success")
       setfCount((prev) => prev + 1);
     } catch (error) {
-      showToast(error.messsage,"error")
+      showToast(error.response.data.message,"error")
       console.log(error);
     }
   };
