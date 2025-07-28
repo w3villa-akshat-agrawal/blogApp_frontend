@@ -1,14 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ProfileImage from "../assets/Account-cuate.svg";
 import Toast from "../components/Toast";
+import Avatar from "react-avatar";
 import { blogDelete, userProfile } from "../api/blogApi";
 import Navbar from "../components/Navbar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../api/authApi";
 import { getFollowers, getFollowings, userFollow } from "../api/socialApi";
+import axios from "axios";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const userIdFetch = location.state?.id;
+
+  const inputRef = useRef();
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -23,21 +29,22 @@ const Profile = () => {
   const [username, setusername] = useState("");
   const [fCount, setfCount] = useState(0);
   const [userId, setuserId] = useState(0);
-  const location = useLocation();
-  const userIdFetch = location.state?.id;
-
   const [searchUser, setsearchUser] = useState("");
+
+  const [profileImage, setProfileImage] = useState(() => {
+    return localStorage.getItem("profilePic") || "";
+  });
 
   const [profileData, setProfileData] = useState({
     username: "loading...",
     followers: 0,
     following: 0,
+    email: "",
     blogs: [],
   });
 
   const [count, setCount] = useState(0);
 
-  // Show toast
   const showToast = (message, type = "success") => {
     setToastMessage(message);
     setToastType(type);
@@ -89,10 +96,10 @@ const Profile = () => {
   const handelFollow = async (data) => {
     try {
       await userFollow(data);
-      showToast("now following","success")
+      showToast("Now following", "success");
       setfCount((prev) => prev + 1);
     } catch (error) {
-      showToast(error.response.data.message,"error")
+      showToast(error.response.data.message, "error");
       console.log(error);
     }
   };
@@ -110,6 +117,31 @@ const Profile = () => {
   const handelUpdate = (title, body, id) => {
     navigate("/update", { state: { title, body, id } });
   };
+
+ const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  try {
+    const res = await axios.post("http://localhost:3008/api/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const imageUrl = res.data.url;
+    setProfileImage(imageUrl);
+    localStorage.setItem("profilePic", imageUrl);
+    showToast("Image uploaded successfully", "success");
+  } catch (error) {
+    console.error(error);
+    showToast("Failed to upload image", "error");
+  }
+};
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -132,6 +164,7 @@ const Profile = () => {
           followers: followerCount,
           following: followingCount,
           blogs: userDetail.blogs,
+          email: userDetail.email,
         });
       } catch (err) {
         console.log(err);
@@ -142,7 +175,6 @@ const Profile = () => {
     fetchProfile();
   }, [count, fCount]);
 
-  // Debounce search in sidebar
   useEffect(() => {
     const delay = setTimeout(() => {
       if (sidePanelTitle === "Followers") {
@@ -166,7 +198,6 @@ const Profile = () => {
           onClose={() => setToastVisible(false)}
         />
 
-        {/* Left: Profile Image */}
         <div className="col-span-12 md:col-span-4 flex items-center justify-center">
           <img
             src={ProfileImage}
@@ -175,13 +206,48 @@ const Profile = () => {
           />
         </div>
 
-        {/* Right: Profile Info + Blogs */}
         <div className="col-span-12 md:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800">
-                {profileData.username}
-              </h2>
+            <div className="flex flex-col items-start gap-2">
+              <div className="flex items-center gap-7">
+                <h2 className="text-3xl font-bold border-b text-gray-800">
+                  {profileData.username}
+                </h2>
+
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => inputRef.current.click()}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-20 h-20 rounded-full object-cover border"
+                    />
+                  ) : (
+                    <Avatar
+                      name={profileData.username || profileData.email}
+                      size="80"
+                      round={true}
+                      textSizeRatio={2}
+                    />
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    ref={inputRef}
+                    onChange={handleImageUpload}
+                  />
+
+                  <div className="absolute bottom-0 w-full text-center bg-black bg-opacity-60 text-white text-sm py-1 opacity-0 group-hover:opacity-100 transition">
+                    Click to Upload
+                  </div>
+                </div>
+              </div>
+
+              <h10 className="text-md text-gray-800">{profileData.email}</h10>
               <p className="text-gray-600 mt-1">
                 <button
                   onClick={() => handleUserFollowers(userId)}
@@ -214,7 +280,6 @@ const Profile = () => {
             ) : null}
           </div>
 
-          {/* Blog List */}
           <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2 space-y-4">
             {profileData.blogs.map((blog) => (
               <div
@@ -224,12 +289,13 @@ const Profile = () => {
                 <h4 className="text-lg font-bold text-gray-800">{blog.title}</h4>
                 <p className="text-gray-600 mt-1 mb-2">{blog.body}</p>
 
-                {/* Comments preview */}
                 <div className="text-sm text-gray-700 mb-2">
                   <p className="font-semibold">Recent Comments:</p>
                   {blog.comments?.length > 0 ? (
                     blog.comments.slice(0, 2).map((c, i) => (
-                      <p key={i} className="ml-2 text-gray-600">• {c.comment}</p>
+                      <p key={i} className="ml-2 text-gray-600">
+                        • {c.comment}
+                      </p>
                     ))
                   ) : (
                     <p className="ml-2 text-gray-400">No comments yet.</p>
@@ -270,7 +336,6 @@ const Profile = () => {
             showSidePanel ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          {/* Header */}
           <div className="flex justify-between items-center px-4 py-3 border-b border-green-200 bg-green-100">
             <h2 className="text-lg font-semibold text-green-800">
               {sidePanelTitle}
@@ -283,7 +348,6 @@ const Profile = () => {
             </button>
           </div>
 
-          {/* Search bar */}
           {(sidePanelTitle === "Followers" || sidePanelTitle === "Followings") && (
             <div className="p-3 border-b border-green-100 bg-green-50">
               <input
@@ -296,7 +360,6 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Panel Content */}
           <div className="p-4 overflow-y-auto h-[calc(100%-200px)] space-y-3">
             {sidePanelData?.length > 0 ? (
               sidePanelData.map((item, idx) => (

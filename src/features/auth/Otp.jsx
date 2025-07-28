@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { otpVerify } from "../../api/otpApi"; // Adjust the path if needed
+import { otpVerify, regenrateOtp } from "../../api/otpApi"; // Adjust the path if needed
 import SignupImage from "../../assets/Enter OTP-bro.svg";
 import Toast from "../../components/Toast";
 
 const Otp = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const phone = location.state?.phone; // 📌 Get phone from navigate state
+  const phone = location.state?.phone||7455966189 // 📌 Get phone from navigate state
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [toast, setToast] = useState({ message: "", type: "success", visible: false });
@@ -36,7 +36,13 @@ const Otp = () => {
       setToast((prev) => ({ ...prev, visible: false }));
     }, 4000);
   };
-
+const  handelregenerate = async ()=>{
+    const payload = {
+        phone: `+91${phone}`, 
+      };
+  const result = await regenrateOtp(payload)
+  console.log(result)
+}
   const handleSubmit = async (e) => {
     e.preventDefault();
     const finalOtp = otp.join("");
@@ -53,7 +59,7 @@ const Otp = () => {
 
     try {
       const payload = {
-        phone: `+91${phone}`, // If phone already includes +91, then use phone directly
+        phone: `${phone}`, // If phone already includes +91, then use phone directly
         otp: finalOtp,
       };
 
@@ -64,8 +70,8 @@ const Otp = () => {
         navigate("/login"); // or wherever you want to go
       }, 1000);
     } catch (err) {
-      const errMsg = err?.response?.data?.message || "OTP verification failed";
-      showToast(errMsg, "error");
+        console.log(err)
+      showToast("otp expire plz regenrate otp", "error");
     }
   };
 
@@ -106,6 +112,9 @@ const Otp = () => {
             >
               Submit OTP
             </button>
+            <button onClick={()=>{
+              handelregenerate()
+            }} className="text-white">regenrate otp</button>
           </form>
         </div>
       </div>

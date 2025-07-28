@@ -1,17 +1,33 @@
-import React, { useState } from "react";
-import {loginUser} from "../../api/authApi";
+import React, { useState, useEffect } from "react";
+import { loginUser } from "../../api/authApi";
 import SignupImage from "../../assets/Login-cuate.svg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Toast from "../../components/Toast";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
-  const [toast, setToast] = useState({ message: "", type: "success", visible: false });
+  const [toast, setToast] = useState({
+    message: "",
+    type: "success",
+    visible: false,
+  });
+
+  // ✅ Show error toast if redirected from Google login with ?error=... in URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const errorMessage = queryParams.get("error");
+
+    if (errorMessage) {
+      showToast(errorMessage, "error");
+    }
+  }, [location.search]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,21 +46,17 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...formData
-    };
+    const payload = { ...formData };
 
     try {
-      const response = await  loginUser(payload);
+      const response = await loginUser(payload);
       showToast(response.data?.message || "Login successful!", "success");
 
-      setFormData({
-        email: "",
-        password: ""
-      });
-      navigate("/dashboard")
+      setFormData({ email: "", password: "" });
+      navigate("/dashboard");
     } catch (error) {
-      const errMsg = error.response?.data?.message || "Something went wrong. Try again.";
+      const errMsg =
+        error.response?.data?.message || "Something went wrong. Try again.";
       showToast(errMsg, "error");
     }
   };
@@ -68,7 +80,6 @@ const Login = () => {
             </h2>
 
             {[
-            
               { name: "email", placeholder: "Email", type: "email" },
               { name: "password", placeholder: "Password", type: "password" },
             ].map(({ name, placeholder, type = "text" }) => (
@@ -84,9 +95,12 @@ const Login = () => {
               />
             ))}
 
-             <p className="text-sm text-center text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-center text-gray-600 dark:text-gray-300">
               Not have an account?{" "}
-              <Link to="/google" className="text-green-600 hover:underline dark:text-green-400">
+              <Link
+                to="/google"
+                className="text-green-600 hover:underline dark:text-green-400"
+              >
                 Google Login
               </Link>
             </p>
@@ -100,7 +114,10 @@ const Login = () => {
 
             <p className="text-sm text-center text-gray-600 dark:text-gray-300">
               Not have an account?{" "}
-              <Link to="/signup" className="text-green-600 hover:underline dark:text-green-400">
+              <Link
+                to="/signup"
+                className="text-green-600 hover:underline dark:text-green-400"
+              >
                 Signup
               </Link>
             </p>
