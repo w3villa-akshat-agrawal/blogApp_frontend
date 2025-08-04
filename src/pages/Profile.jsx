@@ -127,7 +127,7 @@ const Profile = () => {
   formData.append("userFetchId",userIdFetch||loginUserID)
 
   try {
-    const res = await axios.post("http://localhost:3008/api/upload", formData, {
+    const res = await axios.post("https://blog-backend-l8vd.onrender.com/api/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
