@@ -3,7 +3,7 @@ import axios from "axios";
 
 
  const otpInstance = axios.create({
-  baseURL: 'http://localhost:3009/api/otp',
+  baseURL: 'https://blog-backend-l8vd.onrender.com/api/otp',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ import axios from "axios";
 });
 
 export const otpInstance2 = axios.create({
-  baseURL: 'http://localhost:3008/api/otp',
+  baseURL: 'https://blog-backend-l8vd.onrender.com/api/otp',
   headers: {
     'Content-Type': 'application/json',
   },
