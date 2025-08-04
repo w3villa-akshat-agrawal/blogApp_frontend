@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const adminInstance = axios.create({
-  baseURL: 'http://localhost:3008/api/v1/admin',
+  baseURL: 'https://blog-backend-l8vd.onrender.com/api/v1/admin',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -124,22 +124,28 @@ const Profile = () => {
 
   const formData = new FormData();
   formData.append("image", file);
+  formData.append("userFetchId",userIdFetch||loginUserID)
 
   try {
     const res = await axios.post("http://localhost:3008/api/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+      withCredentials:true,
     });
 
     const imageUrl = res.data.url;
     setProfileImage(imageUrl);
-    localStorage.setItem("profilePic", imageUrl);
+    // localStorage.setItem("profilePic", imageUrl);
     showToast("Image uploaded successfully", "success");
   } catch (error) {
-    console.error(error);
-    showToast("Failed to upload image", "error");
-  }
+  console.error(error);
+
+  const backendError =
+    error.response?.data?.error || "Image upload failed. Try again.";
+
+  showToast(backendError, "error");
+}
 };
 
 
@@ -159,6 +165,7 @@ const Profile = () => {
         setuserId(userIdFetch || loginUserID);
         setisFollowing(followingStatus);
         setusername(userDetail.username);
+        setProfileImage(userDetail.profileImage)
         setProfileData({
           username: userDetail.username,
           followers: followerCount,

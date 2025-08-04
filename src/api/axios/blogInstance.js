@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const blogInstance = axios.create({
-  baseURL: 'http://localhost:3008/api/v1/blog',
+  baseURL: 'https://blog-backend-l8vd.onrender.com/api/v1/blog',
   headers: {
     'Content-Type': 'application/json',
   },
