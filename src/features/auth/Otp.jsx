@@ -114,7 +114,7 @@ const  handelregenerate = async ()=>{
             </button>
             <button onClick={()=>{
               handelregenerate()
-            }} className="text-white">regenrate otp</button>
+            }} className="text-black">regenrate otp</button>
           </form>
         </div>
       </div>
