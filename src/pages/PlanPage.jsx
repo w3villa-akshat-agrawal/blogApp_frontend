@@ -35,7 +35,7 @@ const handelbuyNow = async (planId, period, name) => {
     }
 
     // Create Razorpay order
-    const res = await axios.post("http://localhost:3008/api/payment/create-order", {
+    const res = await axios.post("https://blog-backend-l8vd.onrender.com/api/payment/create-order", {
       amount: price * 100, // Razorpay accepts amount in paise
       planId,
     });
@@ -52,7 +52,7 @@ const handelbuyNow = async (planId, period, name) => {
       handler: async (response) => {
         try {
           // Verify payment on backend
-          await axios.post("http://localhost:3008/api/payment/verify-payment", {
+          await axios.post("https://blog-backend-l8vd.onrender.com/api/payment/verify-payment", {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
