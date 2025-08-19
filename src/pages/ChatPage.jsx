@@ -19,7 +19,7 @@ const ChatPage = () => {
 
       try {
         const res = await axios.post(
-          "http://localhost:5001/blogChat/convo",
+          "https://blog-chat-service.onrender.com/blogChat/convo",
           { userId: sender, receiverId: receiver },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -29,7 +29,7 @@ const ChatPage = () => {
 
         // Fetch old messages
         const msgsRes = await axios.get(
-          `http://localhost:5001/blogChat/chats/${convId}`
+          `https://blog-chat-service.onrender.com/blogChat/chats/${convId}`
         );
         setMessages(msgsRes.data);
       } catch (err) {
@@ -44,7 +44,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (!conversationId) return;
 
-    const newSocket = io("http://localhost:5001"); // backend server
+    const newSocket = io("https://blog-chat-service.onrender.com"); // backend server
     setSocket(newSocket);
 
     newSocket.emit("joinConversation", conversationId);
