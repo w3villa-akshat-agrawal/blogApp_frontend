@@ -1,4 +1,5 @@
 import React from 'react';
+import "../src/App.css"
 import HomePage from './pages/HomePage';
 import { Routes, Route } from 'react-router-dom';
 import Signup from './features/auth/Signup';
@@ -12,6 +13,7 @@ import BlogPage from './pages/BlogPage';
 import PlanPage from './pages/PlanPage';
 import AdminPage from './pages/AdminPage';
 import Otp from './features/auth/Otp';
+import ChatPage from './pages/ChatPage';
 
 const App = () => {
   return (
@@ -40,6 +42,7 @@ const App = () => {
         <Route path='/plans'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><PlanPage/></div>}></Route>
         <Route path='/admin'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><AdminPage/></div>}></Route>
         <Route path='/otpVerification'element={<div className="m-auto bg-gradient-to-r from-green-50 via-white to-green-50"><Otp/></div>}></Route>
+        <Route path='/chat' element= {<ChatPage/>}></Route>
     </Routes>
   );
 };

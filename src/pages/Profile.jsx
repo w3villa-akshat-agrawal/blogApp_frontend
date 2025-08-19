@@ -30,7 +30,7 @@ const Profile = () => {
   const [fCount, setfCount] = useState(0);
   const [userId, setuserId] = useState(0);
   const [searchUser, setsearchUser] = useState("");
-
+  
   const [profileImage, setProfileImage] = useState(() => {
     return localStorage.getItem("profilePic") || "";
   });
@@ -148,7 +148,11 @@ const Profile = () => {
 }
 };
 
-
+const handelChats = (receiverId, senderId) => {
+    navigate("/chat", {
+      state: { sender: senderId, receiver: receiverId },
+    });
+  };
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -274,16 +278,30 @@ const Profile = () => {
             </div>
 
             {isFollowing ? (
-              <button className="px-4 py-2 bg-gray-300 text-black rounded">
+                  <div className="flex items-center gap-2">
+                    <button className="px-4 py-2 bg-gray-300 text-black rounded">
                 Following
               </button>
+               <button onClick={()=>handelChats(userId,loginUserID)} className="px-4 py-1 bg-green-500 text-white rounded">
+                    chat
+                  </button>
+                  </div>
+
+
+
             ) : userId && loginUserID !== userId ? (
-              <button
+                <div className="flex items-center gap-2">
+                  <button onClick={()=>handelChats(userId,loginUserID)} className="px-4 py-1 bg-green-500 text-white rounded">
+                    chat
+                  </button>
+
+                   <button
                 onClick={() => handelFollow({ id: userId, name: username })}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
+                className="px-4 py-1 bg-blue-500 text-white rounded"
               >
                 Follow
               </button>
+                </div>
             ) : null}
           </div>
 
