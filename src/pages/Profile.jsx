@@ -19,7 +19,7 @@ const Profile = () => {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
-
+  // const [isPrivate, setisPrivate] = useState(true)
   const [sidePanelData, setSidePanelData] = useState([]);
   const [sidePanelTitle, setSidePanelTitle] = useState("Details");
   const [showSidePanel, setShowSidePanel] = useState(false);
@@ -44,7 +44,34 @@ const Profile = () => {
   });
 
   const [count, setCount] = useState(0);
+ const fetchProfile = async () => {
+      try {
+        const res = await userProfile(userIdFetch);
+        const {
+          userDetail,
+          followerCount,
+          followingCount,
+          loginUserID,
+          followingStatus,
+        } = res.data;
 
+        setloginUserID(loginUserID);
+        setuserId(userIdFetch || loginUserID);
+        setisFollowing(followingStatus);
+        setusername(userDetail.username);
+        setProfileImage(userDetail.profileImage)
+        setProfileData({
+          username: userDetail.username,
+          followers: followerCount,
+          following: followingCount,
+          blogs: userDetail.blogs,
+          email: userDetail.email,
+        });
+      } catch (err) {
+        console.log(err);
+        showToast("Failed to load profile", "error");
+      }
+    };
   const showToast = (message, type = "success") => {
     setToastMessage(message);
     setToastType(type);
@@ -61,6 +88,41 @@ const Profile = () => {
   const handelShowComments = (comments) => {
     handleOpenSidePanel(comments, "Comments");
   };
+const handlePrivacyToggle = async (checked, blogId) => {
+  try {
+    if (checked) {
+      await axios.post(
+        "https://blog-backend-l8vd.onrender.com/api/v1/blog/private",
+        { blogId }, // request body
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // ensures cookies are sent
+        }
+      );
+      await fetchProfile();
+      showToast("Profile set to Private", "success");
+    } else {
+      await axios.post(
+        "https://blog-backend-l8vd.onrender.com/api/v1/blog/public",
+        { blogId }, // request body
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      await fetchProfile();
+      showToast("Profile set to Public", "success");
+    }
+  } catch (error) {
+    console.error("Error toggling privacy:", error);
+    showToast("Something went wrong!", "error");
+  }
+};
+
 
   const handleUserFollowers = async (ID, search = "") => {
     try {
@@ -154,34 +216,7 @@ const handelChats = (receiverId, senderId) => {
     });
   };
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await userProfile(userIdFetch);
-        const {
-          userDetail,
-          followerCount,
-          followingCount,
-          loginUserID,
-          followingStatus,
-        } = res.data;
-
-        setloginUserID(loginUserID);
-        setuserId(userIdFetch || loginUserID);
-        setisFollowing(followingStatus);
-        setusername(userDetail.username);
-        setProfileImage(userDetail.profileImage)
-        setProfileData({
-          username: userDetail.username,
-          followers: followerCount,
-          following: followingCount,
-          blogs: userDetail.blogs,
-          email: userDetail.email,
-        });
-      } catch (err) {
-        console.log(err);
-        showToast("Failed to load profile", "error");
-      }
-    };
+   
 
     fetchProfile();
   }, [count, fCount]);
@@ -346,6 +381,19 @@ const handelChats = (receiverId, senderId) => {
                   >
                     Delete
                   </button>
+                {userId === loginUserID ? (
+  <label className="label text-black flex items-center gap-2">
+    <input
+      type="checkbox"
+      checked={blog.type === "private" ? true : false} 
+      className={` ${blog.type ==="private" ? "bg-green-500" : "bg-blue-500"}`}
+      onChange={(e) => handlePrivacyToggle(e.target.checked,blog.id)}
+    />
+    Private
+  </label>
+) : null}
+
+                  
                 </div>
               </div>
             ))}
