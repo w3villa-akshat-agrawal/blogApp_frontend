@@ -103,7 +103,7 @@ const AdminPage = () => {
         onClose={() => setToastVisible(false)}
       />
 
-      <div className="container min-h-screen mx-auto px-4 py-6">
+      <div className="container min-h-screen mx-auto px-4 py-6 text-black">
         <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
 
         {isAdmin && (

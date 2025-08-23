@@ -15,6 +15,11 @@ export const logoutUser = async ()=>{
     return res.data
 }
 
+export const editProfileApi = async (data)=>{
+    const res = await authInstance.patch('/editProfile',data)
+    return res.data
+}
+
 export const googleUserLogin = async () =>{0
      const res = await googleAuthInstance.get('/auth/google');
   console.log("33333333333333333333333333333")

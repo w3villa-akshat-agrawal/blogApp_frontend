@@ -30,6 +30,7 @@ const Profile = () => {
   const [fCount, setfCount] = useState(0);
   const [userId, setuserId] = useState(0);
   const [searchUser, setsearchUser] = useState("");
+
   
   const [profileImage, setProfileImage] = useState(() => {
     return localStorage.getItem("profilePic") || "";
@@ -40,8 +41,15 @@ const Profile = () => {
     followers: 0,
     following: 0,
     email: "",
+    phone:0,
     blogs: [],
   });
+  const [editProfile, seteditProfile] = useState({
+    email:"",
+    phone:"",
+    username:""
+  })
+  
 
   const [count, setCount] = useState(0);
  const fetchProfile = async () => {
@@ -66,7 +74,13 @@ const Profile = () => {
           following: followingCount,
           blogs: userDetail.blogs,
           email: userDetail.email,
+          phone:userDetail.phone
         });
+        seteditProfile({
+         email: userDetail.email,
+        username: userDetail.username,
+         phone:userDetail.phone
+      });
       } catch (err) {
         console.log(err);
         showToast("Failed to load profile", "error");
@@ -134,6 +148,50 @@ const handlePrivacyToggle = async (checked, blogId) => {
     }
   };
 
+
+const handelEditChange = (field, value) => {
+  seteditProfile((prev) => ({
+    ...prev,
+    [field]: value, // keep phone as string for UI
+  }));
+};
+
+const handelEdit = async () => {
+  try {
+    const payload = {
+      ...editProfile,
+      phone: editProfile.phone ? Number(editProfile.phone) : 0, // convert here
+    };
+
+    const res = await axios.patch(
+      "https://blog-backend-l8vd.onrender.com/api/v1/editPRofile",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
+
+    if (res) {
+      showToast("Profile edited", "success");
+    }
+
+    seteditProfile({
+      email: "",
+      phone: "",
+      username: "",
+    });
+
+    fetchProfile(); // refresh after edit
+  } catch (error) {
+    console.log(error);
+    showToast("Profile edit failed", "error");
+  }
+};
+
+
   const handleUserFollowings = async (ID, search = "") => {
     try {
       const res = await getFollowings({ ID, search });
@@ -165,6 +223,8 @@ const handlePrivacyToggle = async (checked, blogId) => {
       console.log(error);
     }
   };
+
+  
 
   const handleLogout = async () => {
     try {
@@ -232,6 +292,17 @@ const handelChats = (receiverId, senderId) => {
     return () => clearTimeout(delay);
   }, [searchUser]);
 
+  // useEffect(() => {
+  //   if (profileData) {
+  //     seteditProfile({
+  //       email:profileData.email,
+  //       username:profileData.username,
+  //       phone:profileData.phone
+  //     });
+  //   }
+  // }, [profileData]);
+
+
   return (
     <>
       <Navbar onlogout={handleLogout} />
@@ -294,6 +365,7 @@ const handelChats = (receiverId, senderId) => {
               </div>
 
               <h10 className="text-md text-gray-800">{profileData.email}</h10>
+               <h10 className="text-md text-gray-800">{profileData.phone}</h10>
               <p className="text-gray-600 mt-1">
                 <button
                   onClick={() => handleUserFollowers(userId)}
@@ -337,7 +409,66 @@ const handelChats = (receiverId, senderId) => {
                 Follow
               </button>
                 </div>
-            ) : null}
+            ) : <div>
+              <button className="btn text-black border hover:cursor-pointer rounded px-4 bg-green-300 shadow" onClick={()=>document.getElementById('my_modal_1').showModal()}>Edit profile</button>
+
+            {/* edit modal */}
+<dialog id="my_modal_1" className="modal">
+  <div className="modal-box rounded-2xl shadow-2xl p-6">
+    <h3 className="font-bold text-xl text-green-300 mb-4">Edit Profile</h3>
+
+    {/* Username Input */}
+    <label className="block mb-3">
+      <span className="text-green-200">Username</span>
+      <input
+        type="text"
+        className="w-full mt-1 p-2 rounded-lg border border-green-600 bg-green-300  text-black focus:ring-2 focus:ring-green-400 outline-none"
+        placeholder={profileData.username}
+        value={editProfile.username}
+        onChange={(e) => handelEditChange("username", e.target.value)}
+      />
+    </label>
+
+    {/* Email Input */}
+    <label className="block mb-3">
+      <span className="text-green-200">Email</span>
+      <input
+        type="email"
+        className="w-full mt-1 p-2 rounded-lg border border-green-600 bg-green-300 text-black  focus:ring-2 focus:ring-green-400 outline-none"
+        placeholder={profileData.email}
+        value={editProfile.email}
+        onChange={(e) => handelEditChange("email", e.target.value)}
+      />
+    </label>
+
+    {/* Phone Input */}
+    <label className="block mb-4">
+      <span className="text-green-200">Phone</span>
+      <input
+        type="number"
+        className="w-full mt-1 p-2 rounded-lg border border-green-600 bg-green-300 text-black  focus:ring-2 focus:ring-green-400 outline-none"
+        placeholder={profileData.phone}
+        value= {editProfile.phone}
+        onChange={(e) => handelEditChange("phone", e.target.value)}
+      />
+    </label>
+
+    {/* Modal Actions */}
+    <div className="modal-action">
+      <form method="dialog" className="flex gap-3">
+        <button  onClick={handelEdit} className="px-5 py-2 rounded-lg bg-green-700 hover:bg-green-600 text-white font-semibold transition-all">
+          Save
+        </button>
+        <button className="px-5 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-semibold transition-all">
+          Cancel
+        </button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+            </div>}
+            
           </div>
 
           <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2 space-y-4">
