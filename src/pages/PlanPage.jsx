@@ -4,11 +4,13 @@ import blogSvg from '../assets/Pricing plans-bro.svg'
 import Toast from '../components/Toast'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import Navbar from '../components/Navbar'
 
 const PlanPage = () => {
   const [plans, setPlans] = useState([])
+  const [loader, setloader] = useState(true)
   const navigate = useNavigate()
-
+  const [loading, setloading] = useState(123)
   // Toast States
   const [toastVisible, setToastVisible] = useState(false)
   const [userId, setuserId] = useState("")
@@ -23,6 +25,7 @@ const PlanPage = () => {
   }
   
 const handelbuyNow = async (planId, period, name) => {
+  setloading(planId)
   try {
     let price;
     if (name.toLowerCase() === "silver") {
@@ -39,7 +42,9 @@ const handelbuyNow = async (planId, period, name) => {
       amount: price * 100, // Razorpay accepts amount in paise
       planId,
     });
-
+    setTimeout(() => {
+      setloading(123)
+    }, 1000);
     const { order, key } = res.data;
 
     const options = {
@@ -62,6 +67,7 @@ const handelbuyNow = async (planId, period, name) => {
           });
 
           showToast("✅ Payment Successful", "success");
+          setloading(123)
           setTimeout(() => navigate('/dashboard'), 2000);
         } catch (err) {
             console.log(err)
@@ -82,6 +88,7 @@ const handelbuyNow = async (planId, period, name) => {
   } catch (error) {
     console.error(error);
     const errMsg = error.response?.data?.message || 'Payment failed.';
+    setloading(123)
     showToast(errMsg, "error");
   }
 };
@@ -94,6 +101,7 @@ const handelbuyNow = async (planId, period, name) => {
       setuserId(res.data.userId)
     }
     fetchPlans()
+    setloader(false)
   }, [])
 
   const getPlanColor = (planName) => {
@@ -106,8 +114,11 @@ const handelbuyNow = async (planId, period, name) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-50 to-green-100 px-4">
+    <>
+    <Navbar/>
+    <div className="min-h-[calc(100vh-56px)]  flex items-center justify-center bg-gradient-to-r from-green-50 to-green-100 px-4">
       {/* ✅ Toast Component */}
+      
       <Toast
         visible={toastVisible}
         message={toastMessage}
@@ -117,8 +128,11 @@ const handelbuyNow = async (planId, period, name) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 w-full max-w-6xl gap-8 items-center">
         {/* Pricing Cards */}
-        <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Choose a Plan</h2>
+        
+      <div className='flex flex-col gap-2'>
+            <div className='text-black text-bold text-2xl'>choose plan</div>
+         {loader ? (<div className='text-black text-center'><span className="loading loading-ring loading-lg"></span></div>) :( <div className="space-y-6">
+          
           {plans.map((plan) => (
             <div key={plan.id}>
               <div
@@ -136,16 +150,18 @@ const handelbuyNow = async (planId, period, name) => {
                     Duration: {plan.durationHours} hour{plan.durationHours > 1 ? 's' : ''}
                   </p>
                 </div>
-                <button
+                {loading == plan.id ? <div className='text-black text-center'><span className="loading loading-ring loading-lg"></span></div>:( <button
                   onClick={() => handelbuyNow(plan.id, plan.durationHours,plan.name)}
                   className="border-black px-3 py-1 rounded bg-red-600 hover:scale-[1.05] transition-transform"
                 >
                   Buy Now
-                </button>
+                </button>)}
+               
               </div>
             </div>
           ))}
-        </div>
+        </div>) }
+      </div>
 
         {/* Illustration */}
         <div className="hidden md:flex items-center justify-center">
@@ -153,6 +169,8 @@ const handelbuyNow = async (planId, period, name) => {
         </div>
       </div>
     </div>
+    </>
+    
   )
 }
 

@@ -8,13 +8,13 @@ const BlogPage = () => {
   const { state } = useLocation();
   const { id } = state;
   const navigate = useNavigate();
-
+  const [loader, setloader] = useState(false)
   const [blog, setBlog] = useState([]);
   const [error, setError] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [count, setCount] = useState(0);
-  const [userId, setUserId] = useState('');
+  // const [userId, setUserId] = useState('');
 
   // Fetch blog
   useEffect(() => {
@@ -22,7 +22,7 @@ const BlogPage = () => {
       try {
         const res = await fetchBlog(id);
         setBlog(res.data.data);
-        setUserId(res.data.userId);
+        // setUserId(res.data.userId);
       } catch (err) {
         setError('Failed to fetch blog');
         console.error(err.message);
@@ -33,7 +33,7 @@ const BlogPage = () => {
   }, [id, count]);
 
   if (error) return <div className="text-red-500 text-center mt-10">{error}</div>;
-  if (!blog || blog.length === 0) return <div className="text-center mt-10 text-green-800">Loading blog...</div>;
+  if (!blog || blog.length === 0) return <div className="text-center mt-10 min-h-screen flex items-center justify-center text-green-800"><span className="loading loading-ring loading-lg"></span></div>;
 
   const blogData = blog[0];
 
@@ -44,12 +44,14 @@ const BlogPage = () => {
   };
 
   const handlePublishComment = async (id) => {
+    setloader(true)
     try {
       if (!newComment.trim()) return;
 
       await postComment({ comment: newComment }, id);
       setCount((prev) => prev + 1);
       setNewComment('');
+      setloader(false)
     } catch (error) {
       console.log(error);
     }
@@ -146,12 +148,13 @@ const BlogPage = () => {
             className="w-full p-2 border border-green-300 rounded-md focus:outline-none focus:ring-green-400 text-green-900"
             placeholder="Write a comment..."
           />
-          <button
+          {loader ? (<div className='text-center text-black'><span className="loading loading-ring loading-lg"></span></div>):(<button
             onClick={() => handlePublishComment(blog[0].id)}
             className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md w-full"
           >
             Publish Comment
-          </button>
+          </button>)}
+          
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import Toast from "../../components/Toast";
 
 const Signup = () => {
     const navigate = useNavigate()
+  const [loader, setloader] = useState(false)  
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -33,6 +34,7 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
+    setloader(true)
     e.preventDefault();
     const payload = {
       ...formData,
@@ -54,7 +56,7 @@ const Signup = () => {
       });
       setTimeout(() => {
         console.log(response)
-        
+  setloader(false)
   navigate("/otpVerification", {
     state: { phone: response.data.user.phone }
   });
@@ -103,13 +105,14 @@ const Signup = () => {
               />
             ))}
 
-            <button
+
+            {loader ? (<div className="text-center"><span className="loading loading-ring loading-lg"></span></div>
+            ):( <button
               type="submit"
               className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
             >
               Sign Up
-            </button>
-
+            </button>)}
             <p className="text-sm text-center text-gray-600 dark:text-gray-300">
               Already have an account?{" "}
               <Link to="/login" className="text-green-600 hover:underline dark:text-green-400">

@@ -11,7 +11,7 @@ const CreateBlog = () => {
     title: '',
     body: ''
   });
-
+  const [loader, setloader] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
   const handleChange = (e) => {
@@ -30,12 +30,14 @@ const CreateBlog = () => {
   };
 
   const handleSubmit = async (e) => {
+    setloader(true)
     e.preventDefault();
 
     try {
       const response = await createBlog(blogData);
       showToast(response.data?.message || 'Blog created successfully!', 'success');
       setBlogData({ title: '', body: '' });
+      setloader(false)
       navigate("/dashboard")
     } catch (error) {
       const errMsg = error.response?.data?.message || 'Failed to create blog.';
@@ -89,13 +91,13 @@ const CreateBlog = () => {
                 />
               )
             )}
-
-            <button
+            {loader ? (<div className='text-center'><span className="loading loading-ring loading-lg"></span></div>) : (<button
               type="submit"
               className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
             >
               Publish Blog
-            </button>
+            </button>)}
+            
           </form>
         </div>
       </div>

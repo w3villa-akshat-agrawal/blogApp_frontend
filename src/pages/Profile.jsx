@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../api/authApi";
 import { getFollowers, getFollowings, userFollow } from "../api/socialApi";
 import axios from "axios";
+import pdfDownloader from "../utils/Pdfdownloader";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -224,7 +225,13 @@ const handelEdit = async () => {
     }
   };
 
-  
+  const handleDownload = async ()=>{
+    await pdfDownloader({
+      name:profileData.username,
+      email:profileData.email,
+      phone:profileData.phone
+    })
+  }
 
   const handleLogout = async () => {
     try {
@@ -324,96 +331,115 @@ const handelChats = (receiverId, senderId) => {
         </div>
 
         <div className="col-span-12 md:col-span-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col items-start gap-2">
-              <div className="flex items-center gap-7">
-                <h2 className="text-3xl font-bold border-b text-gray-800">
-                  {profileData.username}
-                </h2>
+            <div className="flex items-center justify-between bg-white shadow-md rounded-2xl p-6 border">
+    {/* Left Side (Profile Info) */}
+    <div className="flex items-center gap-6">
+      {/* Profile Image */}
+      <div
+        className="relative group cursor-pointer"
+        onClick={() => inputRef.current.click()}
+      >
+        {profileImage ? (
+          <img
+            src={profileImage}
+            alt="Profile"
+            className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
+          />
+        ) : (
+          <Avatar
+            name={profileData.username || profileData.email}
+            size="96"
+            round={true}
+            textSizeRatio={2}
+          />
+        )}
 
-                <div
-                  className="relative group cursor-pointer"
-                  onClick={() => inputRef.current.click()}
-                >
-                  {profileImage ? (
-                    <img
-                      src={profileImage}
-                      alt="Profile"
-                      className="w-20 h-20 rounded-full object-cover border"
-                    />
-                  ) : (
-                    <Avatar
-                      name={profileData.username || profileData.email}
-                      size="80"
-                      round={true}
-                      textSizeRatio={2}
-                    />
-                  )}
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          ref={inputRef}
+          onChange={handleImageUpload}
+        />
 
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    ref={inputRef}
-                    onChange={handleImageUpload}
-                  />
+        {/* Hover overlay */}
+        <div className="absolute bottom-0 w-full text-center bg-black bg-opacity-60 text-white text-xs py-1 rounded-b-full opacity-0 group-hover:opacity-100 transition">
+          Change
+        </div>
+      </div>
 
-                  <div className="absolute bottom-0 w-full text-center bg-black bg-opacity-60 text-white text-sm py-1 opacity-0 group-hover:opacity-100 transition">
-                    Click to Upload
-                  </div>
-                </div>
-              </div>
+      {/* Profile Text Info */}
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-800">
+          {profileData.username}
+        </h2>
+        <span ><button
+  onClick={handleDownload}
+  className=" shadow-md hover:scale-150 "
+>
+  📥 
+</button>
+</span>
+        </div>
+        <p className="text-sm text-gray-600">{profileData.email}</p>
+        <p className="text-sm text-gray-600">{profileData.phone}</p>
 
-              <h10 className="text-md text-gray-800">{profileData.email}</h10>
-               <h10 className="text-md text-gray-800">{profileData.phone}</h10>
-              <p className="text-gray-600 mt-1">
-                <button
-                  onClick={() => handleUserFollowers(userId)}
-                  className="font-semibold border px-1"
-                >
-                  {profileData.followers}
-                </button>{" "}
-                Followers ·{" "}
-                <button
-                  onClick={() => handleUserFollowings(userId)}
-                  className="font-semibold"
-                >
-                  {profileData.following}
-                </button>{" "}
-                Following
-              </p>
-            </div>
+        <div className="mt-3 flex gap-6 text-sm">
+          <button
+            onClick={() => handleUserFollowers(userId)}
+            className="font-semibold text-gray-800 hover:text-blue-600"
+          >
+            {profileData.followers} Followers
+          </button>
+          <button
+            onClick={() => handleUserFollowings(userId)}
+            className="font-semibold text-gray-800 hover:text-blue-600"
+          >
+            {profileData.following} Following
+          </button>
+        </div>
+      </div>
+    </div>
 
-            {isFollowing ? (
-                  <div className="flex items-center gap-2">
-                    <button className="px-4 py-2 bg-gray-300 text-black rounded">
-                Following
-              </button>
-               <button onClick={()=>handelChats(userId,loginUserID)} className="px-4 py-1 bg-green-500 text-white rounded">
-                    chat
-                  </button>
-                  </div>
-
-
-
-            ) : userId && loginUserID !== userId ? (
-                <div className="flex items-center gap-2">
-                  <button onClick={()=>handelChats(userId,loginUserID)} className="px-4 py-1 bg-green-500 text-white rounded">
-                    chat
-                  </button>
-
-                   <button
-                onClick={() => handelFollow({ id: userId, name: username })}
-                className="px-4 py-1 bg-blue-500 text-white rounded"
-              >
-                Follow
-              </button>
-                </div>
-            ) : <div>
-              <button className="btn text-black border hover:cursor-pointer rounded px-4 bg-green-300 shadow" onClick={()=>document.getElementById('my_modal_1').showModal()}>Edit profile</button>
-
-            {/* edit modal */}
-<dialog id="my_modal_1" className="modal">
+    {/* Right Side (Actions) */}
+    <div className="flex items-center gap-3">
+      {isFollowing ? (
+        <>
+          <button className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition">
+            Following
+          </button>
+          <button
+            onClick={() => handelChats(userId, loginUserID)}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition"
+          >
+            Chat
+          </button>
+        </>
+      ) : userId && loginUserID !== userId ? (
+        <>
+          <button
+            onClick={() => handelChats(userId, loginUserID)}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition"
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => handelFollow({ id: userId, name: username })}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+          >
+            Follow
+          </button>
+        </>
+      ) : (
+        <button
+          className="px-4 py-2 bg-green-400 text-black rounded-lg shadow hover:bg-green-500 transition hover:cursor-pointer"
+          onClick={() => document.getElementById("my_modal_1").showModal()}
+        >
+          Edit Profile
+        </button>
+      )}
+     <dialog id="my_modal_1" className="modal">
   <div className="modal-box rounded-2xl shadow-2xl p-6">
     <h3 className="font-bold text-xl text-green-300 mb-4">Edit Profile</h3>
 
@@ -465,17 +491,16 @@ const handelChats = (receiverId, senderId) => {
       </form>
     </div>
   </div>
-</dialog>
+</dialog> 
+    </div>
+  </div>
 
-            </div>}
-            
-          </div>
-
-          <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2 space-y-4">
-            {profileData.blogs.map((blog) => (
+          <div className="max-h-[calc(100vh-200px)] overflow-y-auto  space-y-4 rounded-lg ">
+            <div className="grid grid-cols-12 gap-2"> 
+                    {profileData.blogs.map((blog) => (
               <div
                 key={blog.id}
-                className="border border-gray-200 rounded-md p-4 bg-white shadow-sm"
+                className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm col-span-6"
               >
                 <h4 className="text-lg font-bold text-gray-800">{blog.title}</h4>
                 <p className="text-gray-600 mt-1 mb-2">{blog.body}</p>
@@ -531,6 +556,7 @@ const handelChats = (receiverId, senderId) => {
             {profileData.blogs.length === 0 && (
               <p className="text-gray-500">No blogs posted yet.</p>
             )}
+            </div>
           </div>
         </div>
 
