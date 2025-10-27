@@ -90,16 +90,24 @@ const Dashboard = () => {
         {/* ✅ Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {blog.map((item, idx) => (
+            console.log(item),
             <div
               onClick={() => handelBlogOpen(item.id)}
               key={idx}
               className="bg-white rounded-xl border border-green-200 shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition cursor-pointer flex flex-col"
             >
-              {/* 📷 Blog Image */}
+              {/* 📷 Blog Image - Updated to use actual uploaded image */}
               <img
-                src="https://flowbite.com/docs/images/blog/image-4.jpg"
+                src={
+                  item.image ||
+                  "https://flowbite.com/docs/images/blog/image-4.jpg"
+                }
                 alt="Blog Thumbnail"
                 className="w-full h-40 object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://flowbite.com/docs/images/blog/image-4.jpg";
+                }}
               />
 
               {/* 📝 Blog Content */}

@@ -1,25 +1,33 @@
 import React, { useState } from 'react';
 import BlogSVG from '../assets/Publish article-bro (1).svg'; 
 import Toast from '../components/Toast'; 
-// import { createBlog } from '../services/blogService'; // ✅ Plug in your API
 import { createBlog } from '../api/blogApi';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const CreateBlog = () => {
-   const  navigate = useNavigate()
+  const navigate = useNavigate();
   const [blogData, setBlogData] = useState({
     title: '',
-    body: ''
+    body: '',
+    image:''
   });
-  const [loader, setloader] = useState(false)
+
+  const [file, setFile] = useState(null); // store file separately
+  const [loader, setLoader] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBlogData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
   };
 
   const showToast = (message, type = 'success') => {
@@ -29,21 +37,57 @@ const CreateBlog = () => {
     }, 4000);
   };
 
-  const handleSubmit = async (e) => {
-    setloader(true)
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoader(true);
 
-    try {
-      const response = await createBlog(blogData);
-      showToast(response.data?.message || 'Blog created successfully!', 'success');
-      setBlogData({ title: '', body: '' });
-      setloader(false)
-      navigate("/dashboard")
-    } catch (error) {
-      const errMsg = error.response?.data?.message || 'Failed to create blog.';
-      showToast(errMsg, 'error');
+  try {
+    let imageUrl = null;
+
+    // 1️⃣ Upload image first (if file exists)
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file); // ✅ matches your backend expectation
+      
+      const imageResponse = await axios.post(
+        "https://blog-backend-l8vd.onrender.com/api/v1/upload", // ✅ correct endpoint
+        formData, 
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+      
+      // ✅ Extract URL from your backend response structure
+      if (imageResponse.data.success) {
+        imageUrl = imageResponse.data.url;
+      }
     }
-  };
+console.log(imageUrl)
+    // 2️⃣ Create blog with image URL
+    const blogPayload = {
+      ...blogData,
+      imageUrl: imageUrl // include image URL in blog data
+    };
+    console.log(blogPayload)
+    const response = await createBlog(blogPayload);
+    showToast(response.data?.message || 'Blog created successfully!', 'success');
+    
+    // Reset form
+    setBlogData({ title: '', body: '' });
+    setFile(null);
+    navigate('/dashboard');
+    
+  } catch (error) {
+    console.error(error);
+    const errMsg = error.response?.data?.message || error.response?.data?.error || 'Failed to create blog.';
+    showToast(errMsg, 'error');
+  } finally {
+    setLoader(false);
+  }
+};
 
   return (
     <div className="grid grid-cols-12 min-h-screen container mx-auto relative">
@@ -63,9 +107,10 @@ const CreateBlog = () => {
               Write a New Blog
             </h2>
 
+            {/* Title + Body */}
             {[
               { name: 'title', placeholder: 'Blog Title', type: 'text' },
-              { name: 'body', placeholder: 'Blog Content', type: 'textarea' }
+              { name: 'body', placeholder: 'Blog Content', type: 'textarea' },
             ].map(({ name, placeholder, type }) =>
               type === 'textarea' ? (
                 <textarea
@@ -91,13 +136,41 @@ const CreateBlog = () => {
                 />
               )
             )}
-            {loader ? (<div className='text-center'><span className="loading loading-ring loading-lg"></span></div>) : (<button
-              type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
-            >
-              Publish Blog
-            </button>)}
-            
+
+            {/* File Upload */}
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Upload Blog Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 rounded-md text-sm 
+                           file:mr-4 file:py-2 file:px-4 
+                           file:rounded-md file:border-0 
+                           file:text-sm file:font-semibold 
+                           file:bg-green-50 file:text-green-700 
+                           hover:file:bg-green-100
+                           focus:outline-none focus:ring-2 focus:ring-green-500
+                           dark:text-white dark:border-gray-600 
+                           dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-500"
+              />
+            </div>
+
+            {/* Submit Button */}
+            {loader ? (
+              <div className="text-center">
+                <span className="loading loading-ring loading-lg"></span>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+              >
+                Publish Blog
+              </button>
+            )}
           </form>
         </div>
       </div>
